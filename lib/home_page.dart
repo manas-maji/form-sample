@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       margin: EdgeInsets.only(bottom: _screenHeight * 2),
       child: FormField(
-          initialValue: '-1',
+          initialValue: data.controller.text, // Changed
           validator: (val) => _validate(val, data),
           builder: (fieldState) {
             return InputDecorator(
@@ -194,9 +194,14 @@ class _HomePageState extends State<HomePage> {
                 onTap: () async {
                   DateTime lastDate =
                       DateTime.now().subtract(Duration(days: 365 * 15));
+                  DateTime lastSelectedDate = data.controller.text.isEmpty
+                      ? lastDate
+                      : DateTime.tryParse(data.controller.text) ?? lastDate;
+                  // Initial date is the selected date
+
                   DateTime pickedDate = await showDatePicker(
                       context: context,
-                      initialDate: lastDate,
+                      initialDate: lastSelectedDate,
                       firstDate: DateTime(1900),
                       lastDate: lastDate);
                   if (pickedDate != null) {
