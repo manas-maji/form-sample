@@ -27,8 +27,11 @@ class FieldData {
       case FormFields.LastName:
         return "Last Name";
         break;
-      case FormFields.dob:
+      case FormFields.DateOfBirth:
         return "Date Of Birth";
+        break;
+      case FormFields.Gender:
+        return "Gender";
         break;
       case FormFields.Email:
         return "Email Id";
@@ -55,10 +58,6 @@ class FieldData {
     switch (this.field) {
       case FormFields.FirstName:
       case FormFields.LastName:
-      case FormFields.Country:
-      case FormFields.State:
-      case FormFields.City:
-      case FormFields.dob:
         return TextInputType.text;
         break;
       case FormFields.Email:
@@ -77,10 +76,11 @@ class FieldData {
 enum FormFields {
   FirstName,
   LastName,
-  dob,
+  DateOfBirth,
+  Gender,
   Email,
   MobileNo,
   Country,
   State,
-  City
+  City,
 }

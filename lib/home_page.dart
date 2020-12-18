@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:voya_test/database.dart';
-import 'package:voya_test/ui_model/date_form_field.dart';
 
 import 'data_model/field_data.dart';
 
@@ -45,15 +44,32 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
-            horizontal: _screenWidth * 10, vertical: _screenHeight * 2),
+            horizontal: _screenWidth * 5, vertical: _screenHeight * 2),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
               children: [
-                _buildTextField(FormFields.FirstName),
-                _buildTextField(FormFields.LastName),
-                _buildDatePicker(FormFields.dob),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildTextField(FormFields.FirstName),
+                    ),
+                    SizedBox(width: _screenWidth * 2),
+                    Expanded(
+                      child: _buildTextField(FormFields.LastName),
+                    ),
+                  ],
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildDatePicker(FormFields.DateOfBirth)),
+                    SizedBox(width: _screenWidth * 2),
+                    Expanded(child: _buildGenderRadioButton(FormFields.Gender)),
+                  ],
+                ),
                 _buildTextField(FormFields.Email),
                 _buildTextField(FormFields.MobileNo),
                 _buildDropDownField(FormFields.Country),
@@ -100,71 +116,107 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildGenderRadioButton(FormFields field) {
+    FieldData data = fieldsData.firstWhere((element) => element.field == field);
+    return Container(
+      margin: EdgeInsets.only(bottom: _screenHeight * 2),
+      child: FormField(
+          initialValue: '-1',
+          validator: (val) => _validate(val, data),
+          builder: (fieldState) {
+            return InputDecorator(
+              decoration: _decoration(data.labelText)
+                  .copyWith(errorText: fieldState.errorText),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'MALE',
+                    style: TextStyle(fontSize: _screenWidth * 3),
+                  ),
+                  Container(
+                    height: 24.0,
+                    width: _screenWidth * 4,
+                    alignment: Alignment.centerRight,
+                    child: Radio<String>(
+                        activeColor: Colors.red,
+                        value: '0',
+                        groupValue: fieldState.value,
+                        onChanged: (val) {
+                          fieldState.didChange(val);
+                          setState(() {
+                            data.controller.text = 'MALE';
+                          });
+                        }),
+                  ),
+                  Text(
+                    'FEMALE',
+                    style: TextStyle(fontSize: _screenWidth * 3),
+                  ),
+                  Container(
+                    height: 24.0,
+                    width: _screenWidth * 4,
+                    alignment: Alignment.centerRight,
+                    child: Radio<String>(
+                        activeColor: Colors.red,
+                        value: '1',
+                        groupValue: fieldState.value,
+                        onChanged: (val) {
+                          fieldState.didChange(val);
+                          setState(() {
+                            data.controller.text = 'FEMALE';
+                          });
+                        }),
+                  )
+                ],
+              ),
+            );
+          }),
+    );
+  }
+
   Widget _buildDatePicker(FormFields field) {
     FieldData data = fieldsData.firstWhere((element) => element.field == field);
 
-    // return FormField(
-    //     validator: (val) => _validate(val, data),
-    //     builder: (_) {
-    //       return Container(
-    //         margin: EdgeInsets.only(bottom: _screenHeight * 2),
-    //         child: Column(
-    //           children: [
-    //             InputDecorator(
-    //               decoration: _decoration(
-    //                   data.controller.text.isEmpty ? '' : data.labelText),
-    //               child: Row(
-    //                 children: [
-    //                   Expanded(
-    //                       child: Text(data.controller.text.isNotEmpty
-    //                           ? data.controller.text
-    //                           : data.labelText)),
-    //                   IconButton(
-    //                     icon: Icon(Icons.calendar_today_sharp),
-    //                     onPressed: () async {
-    //                       DateTime lastDate =
-    //                           DateTime.now().subtract(Duration(days: 365 * 15));
-    //                       DateTime pickedDate = await showDatePicker(
-    //                           context: context,
-    //                           initialDate: lastDate,
-    //                           firstDate: DateTime(1900),
-    //                           lastDate: lastDate);
-    //
-    //                       // update date in controller
-    //                       setState(() {
-    //                         data.controller.text = pickedDate.toString();
-    //                       });
-    //                     },
-    //                   ),
-    //                 ],
-    //               ),
-    //             ),
-    //           ],
-    //         ),
-    //       );
-    //     });
     return Container(
       margin: EdgeInsets.only(bottom: _screenHeight * 2),
-      child: DateFormField(
-        context: context,
-        decoration:
-            _decoration(data.controller.text.isEmpty ? '' : data.labelText),
-        initialValue: data.controller.text.isEmpty
-            ? data.labelText
-            : data.controller.text,
-        validator: (val) => _validate(val, data),
-        onChanged: (val) {
-          if (data.controller.text != val) {
-            print('Controller text : ${data.controller.text}');
-            print('new value: $val');
-            setState(() {
-              data.controller.text = val;
-            });
-            print('Controller text : ${data.controller.text}');
-            print('new value: $val');
-          }
-        },
-      ),
+      child: FormField(
+          initialValue: data.controller.text.isEmpty
+              ? data.labelText
+              : data.controller.text,
+          validator: (val) => _validate(val, data),
+          builder: (fieldState) {
+            return InputDecorator(
+              decoration: _decoration(
+                      data.controller.text.isEmpty ? '' : data.labelText)
+                  .copyWith(errorText: fieldState.errorText),
+              child: InkWell(
+                onTap: () async {
+                  DateTime lastDate =
+                      DateTime.now().subtract(Duration(days: 365 * 15));
+                  DateTime pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: lastDate,
+                      firstDate: DateTime(1900),
+                      lastDate: lastDate);
+                  if (pickedDate != null) {
+                    fieldState.didChange(
+                        '${pickedDate.day}/${pickedDate.month}/${pickedDate.year}');
+                    setState(() {
+                      data.controller.text = fieldState.value;
+                    });
+                  }
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(fieldState.value.toString()),
+                    Icon(Icons.calendar_today_sharp),
+                  ],
+                ),
+              ),
+            );
+          }),
     );
   }
 
@@ -245,7 +297,7 @@ class _HomePageState extends State<HomePage> {
       case FormFields.FirstName:
       case FormFields.LastName:
         if (val.isEmpty) {
-          errorText = '${data.labelText} can\'t be empty';
+          errorText = 'Enter ${data.labelText}';
         }
         break;
       case FormFields.Email:
@@ -265,8 +317,13 @@ class _HomePageState extends State<HomePage> {
           errorText = 'Please select a ${data.labelText}';
         }
         break;
-      case FormFields.dob:
-        if (val.isEmpty || val == null || val == data.labelText) {
+      case FormFields.DateOfBirth:
+        if (val == null || val == data.labelText) {
+          errorText = 'Select ${data.labelText}';
+        }
+        break;
+      case FormFields.Gender:
+        if (data.controller.text.isEmpty) {
           errorText = 'Please select ${data.labelText}';
         }
         break;
